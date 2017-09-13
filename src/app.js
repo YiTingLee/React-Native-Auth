@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import { View } from 'react-native';
 import firebase from 'firebase';
-import { Header } from './components/common';
+import { Header, Button, CardSection, Spinner } from './components/common';
 import LoginFrom from './components/LoginForm';
 
 class App extends Component {
+    state = { loggedIn: null };
+
     componentWillMount() {
         firebase.initializeApp({
             apiKey: 'AIzaSyBqwPfzy960bBdyZv9u6JOxrmIZuC_rYyk',
@@ -14,13 +16,38 @@ class App extends Component {
             storageBucket: 'authentication-7d01c.appspot.com',
             messagingSenderId: '969518556027'
         });
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                this.setState({ loggedIn: true });
+            } else {
+                this.setState({ loggedIn: false });
+            }
+        });
+    }
+
+    renderContent() {
+        switch (this.state.loggedIn) {
+            case true:
+                return (
+                    <CardSection>
+                        <Button onPress={() => firebase.auth().signOut()}>
+                            Log Out!
+                        </Button>
+                    </CardSection>
+                );
+            case false:
+                return <LoginFrom />;
+            default:
+                return <Spinner size="large" />;
+        }
     }
 
     render() {
         return (
             <View>
                 <Header headerText="Authentication" />
-                <LoginFrom />
+                {this.renderContent()}
             </View>
         );
     }
